@@ -21,10 +21,7 @@ uint8_t AFEDevice::getMode() { return deviceMode; }
 
 void AFEDevice::saveMode(uint8_t mode) { Data.saveDeviceMode(mode); }
 
-boolean AFEDevice::isFirstTimeLaunch() {
-  uint8_t mode = Data.getDeviceMode();
-  return mode == 0 ? false : mode == 1 ? false : mode == 2 ? false : true;
-}
+boolean AFEDevice::isFirstTimeLaunch() { return Data.isFirstTimeLaunch(); }
 
 void AFEDevice::setDevice() {
   AFEDefaults Defaults;

@@ -14,11 +14,11 @@
 #include <AFE-DEVICE-Structure.h>
 #include <AFE-HTTP-COMMAND-Structure.h>
 
-#include <AFE-NETWORK-Structure.h>
-#include <AFE-RELAY-Structure.h>
-#include <AFE-SWITCH-Structure.h>
-
 #include <AFE-DS18B20-Sensor-Structure.h>
 #include <AFE-LED-Structure.h>
+#include <AFE-NETWORK-Structure.h>
+#include <AFE-NTK10K-Sensor-Structure.h>
+#include <AFE-RELAY-Structure.h>
+#include <AFE-SWITCH-Structure.h>
 
 #endif

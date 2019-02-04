@@ -174,22 +174,7 @@ String AFESitesGenerator::addDeviceConfiguration() {
   DEVICE configuration = Data.getDeviceConfiguration();
   uint8_t itemsNumber = 0;
 
-  String body = "<fieldset><div class=\"cf\"><label>";
-  body += "Nazwa urządzenia";
-  body += "</label><input name=\"dn\" type=\"text\" maxlength=\"16\" "
-          "value=\"";
-  body += configuration.name;
-  body += "\"><span class=\"hint\">Max 16 ";
-  body += "znaków";
-  body += "</span></div></fieldset>";
-
-  String page = addConfigurationBlock(
-      "Urządzenie",
-      "Nazwa jest wykorzystywana jako nazwa urządzenia w Twojej "
-      "lokalnej sieci WiFi oraz jako nazwa hotspot'a urządzenia",
-      body);
-
-  body = "<fieldset>";
+  String body = "<fieldset>";
 
   /* LED */
   for (uint8_t i = 0; i < sizeof(Device.configuration.isLED); i++) {
@@ -246,11 +231,9 @@ String AFESitesGenerator::addDeviceConfiguration() {
 
   body += "</fieldset>";
 
-  page +=
-      addConfigurationBlock("Konfiguracja urządzenia",
-                            "Wybierz podłączone elementy do urządzenia", body);
-
-  return page;
+  return addConfigurationBlock("Konfiguracja urządzenia",
+                               "Wybierz podłączone elementy do urządzenia",
+                               body);
 }
 
 String AFESitesGenerator::addNetworkConfiguration() {
@@ -603,19 +586,14 @@ String AFESitesGenerator::addHelpSection() {
   DEVICE configuration;
   configuration = Data.getDeviceConfiguration();
 
-  String body = "<fieldset><div class=\"cf\"><label>";
-  body += "Stan: uruchomione ";
-  body += "</label><span></div></fieldset>";
-
-  char title[29];
-  sprintf(title, "Urządzenie: %s", configuration.name);
-
-  String page = addConfigurationBlock(title, "", body);
+  String page = "<fieldset><div class=\"cf\"><label>";
+  page += "Stan: uruchomione ";
+  page += "</label><span></div></fieldset>";
 
   if (Device.getMode() != MODE_ACCESS_POINT) {
 
-    body = "<a "
-           "href=\"https://www.smartnydom.pl/afe-firmware-";
+    String body = "<a "
+                  "href=\"https://www.smartnydom.pl/afe-firmware-";
     body += "pl";
     body += "/log\" target=\"_blank\"><img "
             "src=\"https://img.shields.io/badge/"

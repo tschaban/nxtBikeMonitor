@@ -13,6 +13,7 @@
 
 #include <AFE-Configuration.h>
 #include <AFE-Data-Structures.h>
+#include <AFE-EEPROM.h>
 #include <ArduinoJson.h>
 #include <FS.h>
 
@@ -24,6 +25,9 @@ class AFEDataAccess {
 private:
 public:
   AFEDataAccess();
+
+  boolean isFirstTimeLaunch();
+  void deviceConfigured();
 
   DEVICE getDeviceConfiguration();
   void saveConfiguration(DEVICE configuration);
@@ -51,5 +55,8 @@ public:
 
   DS18B20 getSensorConfiguration();
   void saveConfiguration(DS18B20 configuration);
+
+  NTK10K getNTK10KSensorConfiguration();
+  void saveNTK10KSensorConfiguration(NTK10K configuration);
 };
 #endif

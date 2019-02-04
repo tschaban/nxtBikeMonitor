@@ -19,12 +19,12 @@ void AFEWiFi::begin(uint8_t mode) {
 
   // Cleaning @TODO is it neded?
   Data = {};
-  WiFi.hostname(Device.configuration.name);
+  WiFi.hostname("nxtBike");
   if (mode == MODE_ACCESS_POINT) {
     IPAddress apIP(192, 168, 5, 1);
     WiFi.mode(WIFI_AP);
     WiFi.softAPConfig(apIP, apIP, IPAddress(255, 255, 255, 0));
-    WiFi.softAP(Device.configuration.name);
+    WiFi.softAP("nxtBike");
     dnsServer.setTTL(300);
     dnsServer.setErrorReplyCode(DNSReplyCode::ServerFailure);
     dnsServer.start(53, "www.example.com", apIP);

@@ -6,8 +6,25 @@
 
 AFEDataAccess::AFEDataAccess() {}
 
+boolean AFEDataAccess::isFirstTimeLaunch() {
+  AFEEEPROM Eeprom;
+  return Eeprom.read(0);
+}
+
+void AFEDataAccess::deviceConfigured() {
+  AFEEEPROM Eeprom;
+  Eeprom.write(0, true);
+}
+
 DEVICE AFEDataAccess::getDeviceConfiguration() {
   DEVICE configuration;
+  configuration.isLED[0] = true;
+  configuration.isLED[1] = false;
+  configuration.isSwitch[0] = true;
+  configuration.isSwitch[1] = false;
+  configuration.isRelay[0] = false;
+  configuration.isDS18B20 = false;
+  configuration.isNTK10K = true;
   return configuration;
 }
 void AFEDataAccess::saveConfiguration(DEVICE configuration) {}
@@ -107,6 +124,8 @@ void AFEDataAccess::saveConfiguration(NETWORK configuration) {
 
 LED AFEDataAccess::getLEDConfiguration(uint8_t id) {
   LED configuration;
+  configuration.gpio = 2;
+  configuration.changeToOppositeValue = false;
   return configuration;
 }
 void AFEDataAccess::saveConfiguration(uint8_t id, LED configuration) {}
@@ -116,6 +135,8 @@ void AFEDataAccess::saveSystemLedID(uint8_t id) {}
 
 RELAY AFEDataAccess::getRelayConfiguration(uint8_t id) {
   RELAY configuration;
+  configuration.gpio = 12;
+  configuration.ledID = 0;
   return configuration;
 }
 
@@ -123,6 +144,9 @@ void AFEDataAccess::saveConfiguration(uint8_t id, RELAY configuration) {}
 
 SWITCH AFEDataAccess::getSwitchConfiguration(uint8_t id) {
   SWITCH configuration;
+  configuration.gpio = 0;
+  configuration.sensitiveness = 50;
+  configuration.functionality = SWITCH_MULTI;
   return configuration;
 }
 
@@ -130,6 +154,8 @@ void AFEDataAccess::saveConfiguration(uint8_t id, SWITCH configuration) {}
 
 DS18B20 AFEDataAccess::getSensorConfiguration() {
   DS18B20 configuration;
+  configuration.gpio = 14;
+  configuration.interval = 60;
   return configuration;
 }
 void AFEDataAccess::saveConfiguration(DS18B20 configuration) {}
@@ -139,3 +165,13 @@ void AFEDataAccess::saveRelayState(uint8_t id, boolean state) {}
 
 uint8_t AFEDataAccess::getDeviceMode() { return 0; }
 void AFEDataAccess::saveDeviceMode(uint8_t mode) {}
+
+NTK10K AFEDataAccess::getNTK10KSensorConfiguration() {
+  NTK10K configuration;
+  configuration.interval = 10;
+  configuration.numberOfSampling = 20;
+  configuration.VCC = 3.3;
+  configuration.Rs = 150000;
+  return configuration;
+}
+void AFEDataAccess::saveNTK10KSensorConfiguration(NTK10K configuration) {}

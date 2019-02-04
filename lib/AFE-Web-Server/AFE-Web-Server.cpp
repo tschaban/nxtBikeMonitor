@@ -195,12 +195,6 @@ DEVICE AFEWebServer::getDeviceData() {
   _refreshConfiguration =
       true; // it will cause that device configuration will be refeshed
 
-  if (server.arg("dn").length() > 0) {
-    server.arg("dn").toCharArray(data.name, sizeof(data.name));
-  } else {
-    data.name[0] = '\0';
-  }
-
   for (uint8_t i = 0; i < sizeof(Device.configuration.isLED); i++) {
     server.arg("hl").toInt() > i ? data.isLED[i] = true : data.isLED[i] = false;
   }

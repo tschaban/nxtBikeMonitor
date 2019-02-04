@@ -17,11 +17,11 @@
 
 /* Custom DEVICE structure definition */
 struct DEVICE {
-  char name[32];
   boolean isLED[2];
   boolean isSwitch[2];
   boolean isRelay[1];
   boolean isDS18B20;
+  boolean isNTK10K;
 };
 
 #endif

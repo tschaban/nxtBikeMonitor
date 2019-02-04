@@ -1,18 +1,18 @@
 /* Initializing sensor */
-void initSensor() {
+void initSensorDS18B20() {
   if (Device.configuration.isDS18B20) {
-    Sensor.begin();
+    SensorDS18B20.begin();
   }
 }
 
 /* Main code for processing sesnor */
-void mainSensor() {
+void mainSensorDS18B20() {
   if (Device.configuration.isDS18B20) {
     /* Sensor: listener */
-    Sensor.listener();
-    if (Sensor.isReady()) {
+    SensorDS18B20.listener();
+    if (SensorDS18B20.isReady()) {
       Led.on();
-      temperature = Sensor.getTemperature();
+      temperature = SensorDS18B20.getTemperature();
       Led.off();
     }
   }
