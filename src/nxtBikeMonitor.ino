@@ -15,7 +15,7 @@
 #include <AFE-WiFi.h>
 #include <FS.h>
 
-#if defined(DEBUG)
+#ifdef DEBUG
 #include <Streaming.h>
 #endif
 
@@ -99,12 +99,21 @@ void setup() {
     Led.begin(systeLedID - 1);
   }
 
+#ifdef DEBUG
+  Serial << endl << "System LED initialized";
+#endif
+
   /* If device in configuration mode then it starts LED blinking */
   if (Device.getMode() == MODE_ACCESS_POINT) {
     Led.blinkingOn(100);
   }
 
   Network.listener();
+
+#ifdef DEBUG
+  Serial << endl << "Network listener initialized";
+#endif
+
   /* Initializing HTTP WebServer */
   WebServer.handle("/", handleHTTPRequests);
   WebServer.handle("/favicon.ico", handleFavicon);
@@ -121,7 +130,16 @@ void setup() {
 
   if (Device.getMode() == MODE_NORMAL) {
     initSensorNTC10K();
+
+#ifdef DEBUG
+    Serial << endl << "NTC10K initialized";
+#endif
+
     initSensorDS18B20();
+
+#ifdef DEBUG
+    Serial << endl << "DS18B20 initialized";
+#endif
   }
 
 #if defined(DEBUG)

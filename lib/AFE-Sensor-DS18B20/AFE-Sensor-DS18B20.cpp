@@ -9,27 +9,60 @@ AFESensorDS18B20::AFESensorDS18B20(){};
 void AFESensorDS18B20::begin() {
   AFEDataAccess Data;
   configuration = Data.getSensorConfiguration();
+
+  OneWire wireProtocol(configuration.gpio);
+  DallasTemperature Sensors(&wireProtocol);
+
+#ifdef DEBUG
+  Serial << endl
+         << endl
+         << "----------------- DS18B20s Initializing -----------------";
+  Serial << endl
+         << "- Parasite power is: "
+         << (Sensors.isParasitePowerMode() ? "ON" : "OFF");
+#endif
+
+  numberOfSensors = Sensors.getDeviceCount();
+
+#ifdef DEBUG
+  Serial << endl << "- Number of sensors: " << numberOfSensors;
+#endif
+
+  Sensors.requestTemperatures();
+
+#ifdef DEBUG
+  Serial << endl << "- Searching for sensors:";
+#endif
+
+  for (uint8_t i = 0; i < numberOfSensors; i++) {
+    // Search the wire for address
+    if (Sensors.getAddress(address[i], i)) {
+#ifdef DEBUG
+      Serial << endl
+             << "   - found: " << i + 1 << " with address "
+             << addressToString(address[i]);
+      Serial << ", resolution: " << Sensors.getResolution(address[i]);
+#endif
+      currentTemperature[i] = Sensors.getTempC(address[i]);
+#ifdef DEBUG
+      Serial << ", temperature: " << currentTemperature[i] << " C";
+    } else {
+      Serial << endl
+             << "   - found ghost device at: " << i + 1
+             << " but could not detect address. Check power and cabling";
+#endif
+    }
+  }
+
+#ifdef DEBUG
+  Serial << endl << "---------------------------------------------------------";
+#endif
+
   _initialized = true;
 }
 
-float AFESensorDS18B20::getTemperature() {
-  float temperature = -127;
-  if (_initialized) {
-    OneWire wireProtocol(configuration.gpio);
-    DallasTemperature sensor(&wireProtocol);
-    sensor.begin();
-
-    do {
-      sensor.requestTemperatures();
-      temperature = sensor.getTempCByIndex(0);
-    } while (temperature == 85.0 || temperature == (-127.0));
-  }
-  return temperature;
-}
-
-float AFESensorDS18B20::getLatestTemperature() {
-  ready = false;
-  return currentTemperature;
+float AFESensorDS18B20::getTemperature(uint8_t sensorNumber) {
+  return _initialized ? currentTemperature[sensorNumber] : -127;
 }
 
 boolean AFESensorDS18B20::isReady() {
@@ -50,10 +83,35 @@ void AFESensorDS18B20::listener() {
     }
 
     if (time - startTime >= configuration.interval * 1000) {
-      float newTemperature = getTemperature();
-      currentTemperature = newTemperature;
+
+      OneWire wireProtocol(configuration.gpio);
+      DallasTemperature Sensors(&wireProtocol);
+      Sensors.begin();
+
+      for (int i = 0; i < numberOfSensors; i++) {
+        currentTemperature[i] = -127;
+        do {
+          currentTemperature[i] = Sensors.getTempC(address[i]);
+        } while (currentTemperature[i] == 85.0 ||
+                 currentTemperature[i] == (-127.0));
+      }
+
+      Sensors.setWaitForConversion(false);
+      Sensors.requestTemperatures();
       ready = true;
       startTime = 0;
     }
   }
 }
+
+#ifdef DEBUG
+String AFESensorDS18B20::addressToString(DeviceAddress address) {
+  String str = "";
+  for (uint8_t i = 0; i < 8; i++) {
+    if (address[i] < 16)
+      str += String(0, HEX);
+    str += String(address[i], HEX);
+  }
+  return str;
+}
+#endif

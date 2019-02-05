@@ -11,9 +11,17 @@
 #include "WProgram.h"
 #endif
 
+#define MAX_DS18B20_SENSORS 4
+
+struct DS18B20_DETAILS {
+  uint8_t id;
+  uint8_t function; // location of the sensor
+};
+
 struct DS18B20 {
   uint8_t gpio;
-  uint16_t interval;
+  uint8_t interval;
+  DS18B20_DETAILS sesnor[MAX_DS18B20_SENSORS];
 };
 
 #endif
