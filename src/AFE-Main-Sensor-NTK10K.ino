@@ -1,19 +1,19 @@
 /* Initializing sensor */
-void initSensorNTK10K() {
-  if (Device.configuration.isNTK10K) {
-    SensorNTK10K.begin();
+void initSensorNTC10K() {
+  if (Device.configuration.isNTC10K) {
+    SensorNTC10K.begin();
   }
 }
 
 /* Main code for processing sesnor */
-void mainSensorNTK10K() {
-  if (Device.configuration.isNTK10K) {
+void mainSensorNTC10K() {
+  if (Device.configuration.isNTC10K) {
     /* Sensor: listener */
-    SensorNTK10K.listener();
-    if (SensorNTK10K.isReady()) {
+    SensorNTC10K.listener();
+    if (SensorNTC10K.isReady()) {
       float temperature;
       Led.on();
-      temperature = SensorNTK10K.getTemperature();
+      temperature = SensorNTC10K.getTemperature();
       Led.off();
     }
   }

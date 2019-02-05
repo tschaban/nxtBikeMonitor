@@ -21,7 +21,8 @@ struct DEVICE {
   boolean isSwitch[2];
   boolean isRelay[1];
   boolean isDS18B20;
-  boolean isNTK10K;
+  boolean isNTC10K;
+  double VCC;
 };
 
 #endif

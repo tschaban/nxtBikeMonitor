@@ -2,8 +2,8 @@
   LICENSE: https://github.com/tschaban/AFE-Firmware/blob/master/LICENSE
   DOC: https://www.smartnydom.pl/afe-firmware-pl/ */
 
-#ifndef _AFE_Sensor_NTK10K_h
-#define _AFE_Sensor_NTK10K_h
+#ifndef _AFE_Sensor_NTC10K_h
+#define _AFE_Sensor_NTC10K_h
 
 #if defined(ARDUINO) && ARDUINO >= 100
 #include "arduino.h"
@@ -13,21 +13,22 @@
 
 #include <AFE-Data-Access.h>
 
-class AFESensorNTK10K {
+class AFESensorNTC10K {
 
 private:
-  NTK10K configuration;
+  NTC10K configuration;
   boolean ready = false;
   unsigned long startTime = 0;
   boolean _initialized = false;
   uint16_t analogData;
   uint8_t counterOfSamplings = 0;
   float temperature;
+  float VCC;
 
   float calculateTemperature(uint16_t analogData);
 
 public:
-  AFESensorNTK10K();
+  AFESensorNTC10K();
 
   void begin();
 

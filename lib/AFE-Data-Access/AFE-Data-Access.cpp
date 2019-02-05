@@ -8,7 +8,7 @@ AFEDataAccess::AFEDataAccess() {}
 
 boolean AFEDataAccess::isFirstTimeLaunch() {
   AFEEEPROM Eeprom;
-  return Eeprom.read(0);
+  return !Eeprom.read(0);
 }
 
 void AFEDataAccess::deviceConfigured() {
@@ -24,7 +24,8 @@ DEVICE AFEDataAccess::getDeviceConfiguration() {
   configuration.isSwitch[1] = false;
   configuration.isRelay[0] = false;
   configuration.isDS18B20 = false;
-  configuration.isNTK10K = true;
+  configuration.isNTC10K = true;
+  configuration.VCC = 3.3;
   return configuration;
 }
 void AFEDataAccess::saveConfiguration(DEVICE configuration) {}
@@ -166,12 +167,11 @@ void AFEDataAccess::saveRelayState(uint8_t id, boolean state) {}
 uint8_t AFEDataAccess::getDeviceMode() { return 0; }
 void AFEDataAccess::saveDeviceMode(uint8_t mode) {}
 
-NTK10K AFEDataAccess::getNTK10KSensorConfiguration() {
-  NTK10K configuration;
+NTC10K AFEDataAccess::getNTC10KSensorConfiguration() {
+  NTC10K configuration;
   configuration.interval = 10;
   configuration.numberOfSampling = 20;
-  configuration.VCC = 3.3;
-  configuration.Rs = 150000;
+  configuration.balancingResistor = 150000;
   return configuration;
 }
-void AFEDataAccess::saveNTK10KSensorConfiguration(NTK10K configuration) {}
+void AFEDataAccess::saveNTC10KSensorConfiguration(NTC10K configuration) {}

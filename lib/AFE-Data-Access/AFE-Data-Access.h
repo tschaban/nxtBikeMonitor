@@ -56,7 +56,7 @@ public:
   DS18B20 getSensorConfiguration();
   void saveConfiguration(DS18B20 configuration);
 
-  NTK10K getNTK10KSensorConfiguration();
-  void saveNTK10KSensorConfiguration(NTK10K configuration);
+  NTC10K getNTC10KSensorConfiguration();
+  void saveNTC10KSensorConfiguration(NTC10K configuration);
 };
 #endif

@@ -9,7 +9,7 @@
 #include <AFE-LED.h>
 #include <AFE-Relay.h>
 #include <AFE-Sensor-DS18B20.h>
-#include <AFE-Sensor-NTK10K.h>
+#include <AFE-Sensor-NTC10K.h>
 #include <AFE-Switch.h>
 #include <AFE-Web-Server.h>
 #include <AFE-WiFi.h>
@@ -27,7 +27,7 @@ AFESwitch Switch[sizeof(Device.configuration.isSwitch)];
 AFERelay Relay[sizeof(Device.configuration.isRelay)];
 AFELED Led;
 AFESensorDS18B20 SensorDS18B20;
-AFESensorNTK10K SensorNTK10K;
+AFESensorNTC10K SensorNTC10K;
 AFEI2CScanner I2CScanner;
 
 float temperature;
@@ -120,7 +120,7 @@ void setup() {
 #endif
 
   if (Device.getMode() == MODE_NORMAL) {
-    initSensorNTK10K();
+    initSensorNTC10K();
     initSensorDS18B20();
   }
 
@@ -153,7 +153,7 @@ void loop() {
         /* Relay related events */
         mainRelay();
 
-        mainSensorNTK10K();
+        mainSensorNTC10K();
 
       } else { /* Device runs in configuration mode over WiFi */
         if (!Led.isBlinking()) {

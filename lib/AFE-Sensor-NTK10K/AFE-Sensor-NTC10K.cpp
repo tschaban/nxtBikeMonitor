@@ -2,19 +2,23 @@
   LICENSE: https://github.com/tschaban/AFE-Firmware/blob/master/LICENSE
   DOC: https://www.smartnydom.pl/afe-firmware-pl/ */
 
-#include "AFE-Sensor-NTK10K.h"
+#include "AFE-Sensor-NTC10K.h"
 
-AFESensorNTK10K::AFESensorNTK10K(){};
+AFESensorNTC10K::AFESensorNTC10K(){};
 
-void AFESensorNTK10K::begin() {
+void AFESensorNTC10K::begin() {
   AFEDataAccess Data;
-  configuration = Data.getNTK10KSensorConfiguration();
+  configuration = Data.getNTC10KSensorConfiguration();
+
+  DEVICE device = Data.getDeviceConfiguration();
+  VCC = device.VCC;
+
   _initialized = true;
 }
 
-float AFESensorNTK10K::getTemperature() { return temperature; }
+float AFESensorNTC10K::getTemperature() { return temperature; }
 
-boolean AFESensorNTK10K::isReady() {
+boolean AFESensorNTC10K::isReady() {
   if (ready) {
     ready = false;
     return true;
@@ -23,7 +27,7 @@ boolean AFESensorNTK10K::isReady() {
   }
 }
 
-void AFESensorNTK10K::listener() {
+void AFESensorNTC10K::listener() {
   if (_initialized) {
     unsigned long time = millis();
 
@@ -37,7 +41,7 @@ void AFESensorNTK10K::listener() {
         analogData = analogRead(A0);
       } else {
 #ifdef DEBUG
-        Serial << endl << endl << "-------------- Reading NTK10K -------------";
+        Serial << endl << endl << "-------------- Reading NTC10K -------------";
 #endif
 
 #ifdef DEBUG
@@ -69,10 +73,20 @@ void AFESensorNTK10K::listener() {
   }
 }
 
-float AFESensorNTK10K::calculateTemperature(uint16_t analogData) {
+float AFESensorNTC10K::calculateTemperature(uint16_t analogData) {
   double V_NTC = (double)analogData / 1024;
-  double R_NTC = (configuration.Rs * V_NTC) / (configuration.VCC - V_NTC);
+  double R_NTC = (configuration.balancingResistor * V_NTC) / (VCC - V_NTC);
+
+#ifdef DEBUG
+  Serial << endl << "V[NTC]=" << V_NTC << ", R[NTC]=" << R_NTC << ", ";
+#endif
+
   R_NTC = log(R_NTC);
+
+#ifdef DEBUG
+  Serial << "R[NTC-ln]=" << R_NTC;
+#endif
+
   return (1 / (0.001129148 +
                (0.000234125 + (0.0000000876741 * R_NTC * R_NTC)) * R_NTC)) -
          273.15;
