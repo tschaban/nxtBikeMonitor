@@ -20,19 +20,18 @@ private:
   boolean ready = false;
   unsigned long startTime = 0;
   boolean _initialized = false;
-  uint16_t analogData;
+  double analogData = 0;
   uint8_t counterOfSamplings = 0;
-  float temperature;
-  float VCC;
+  double temperature;
 
-  float calculateTemperature(uint16_t analogData);
+  double calculateTemperature(uint16_t analogData);
 
 public:
   AFESensorNTC10K();
 
   void begin();
 
-  float getTemperature();
+  double getTemperature();
 
   boolean isReady();
 

@@ -13,7 +13,6 @@
 
 #include <AFE-Configuration.h>
 #include <AFE-Data-Structures.h>
-#include <AFE-EEPROM.h>
 #include <ArduinoJson.h>
 #include <FS.h>
 
@@ -27,7 +26,9 @@ public:
   AFEDataAccess();
 
   boolean isFirstTimeLaunch();
-  void deviceConfigured();
+
+  uint8_t getDeviceMode();
+  void saveDeviceMode(uint8_t mode);
 
   DEVICE getDeviceConfiguration();
   void saveConfiguration(DEVICE configuration);
@@ -43,9 +44,6 @@ public:
 
   SWITCH getSwitchConfiguration(uint8_t id);
   void saveConfiguration(uint8_t id, SWITCH configuration);
-
-  uint8_t getDeviceMode();
-  void saveDeviceMode(uint8_t mode);
 
   LED getLEDConfiguration(uint8_t id);
   void saveConfiguration(uint8_t id, LED configuration);

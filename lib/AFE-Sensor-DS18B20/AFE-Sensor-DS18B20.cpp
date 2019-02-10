@@ -13,10 +13,14 @@ void AFESensorDS18B20::begin() {
   OneWire wireProtocol(configuration.gpio);
   DallasTemperature Sensors(&wireProtocol);
 
+  Sensors.begin();
+
 #ifdef DEBUG
   Serial << endl
          << endl
-         << "----------------- DS18B20s Initializing -----------------";
+         << "----------------- DS18B20s Initializing -----------------" << endl
+         << "- GPIO: " << configuration.gpio << endl
+         << "- Interval: " << configuration.interval;
   Serial << endl
          << "- Parasite power is: "
          << (Sensors.isParasitePowerMode() ? "ON" : "OFF");
@@ -41,7 +45,7 @@ void AFESensorDS18B20::begin() {
       Serial << endl
              << "   - found: " << i + 1 << " with address "
              << addressToString(address[i]);
-      Serial << ", resolution: " << Sensors.getResolution(address[i]);
+      Serial << ", resolution: " << Sensors.getResolution(address[i]) << "b";
 #endif
       currentTemperature[i] = Sensors.getTempC(address[i]);
 #ifdef DEBUG
@@ -54,11 +58,18 @@ void AFESensorDS18B20::begin() {
     }
   }
 
+  if (numberOfSensors > 0) {
+    _initialized = true;
+#ifdef DEBUG
+    Serial << endl << "- DS18B20 initialized";
+  } else {
+    Serial << endl << "- DS18B20 NOT initialized";
+#endif
+  }
+
 #ifdef DEBUG
   Serial << endl << "---------------------------------------------------------";
 #endif
-
-  _initialized = true;
 }
 
 float AFESensorDS18B20::getTemperature(uint8_t sensorNumber) {
@@ -83,6 +94,12 @@ void AFESensorDS18B20::listener() {
     }
 
     if (time - startTime >= configuration.interval * 1000) {
+#ifdef DEBUG
+      Serial << endl
+             << endl
+             << "----------------- Reading DS18B20 -----------------";
+      Serial << endl << "- Interval: " << (time - startTime) / 1000 << "sec.";
+#endif
 
       OneWire wireProtocol(configuration.gpio);
       DallasTemperature Sensors(&wireProtocol);
@@ -94,12 +111,20 @@ void AFESensorDS18B20::listener() {
           currentTemperature[i] = Sensors.getTempC(address[i]);
         } while (currentTemperature[i] == 85.0 ||
                  currentTemperature[i] == (-127.0));
+#ifdef DEBUG
+        Serial << endl
+               << "- Sensor: " << i + 1
+               << ", temperature: " << currentTemperature[i] << " C";
+#endif
       }
 
       Sensors.setWaitForConversion(false);
       Sensors.requestTemperatures();
       ready = true;
       startTime = 0;
+#ifdef DEBUG
+      Serial << endl << "---------------------------------------------------";
+#endif
     }
   }
 }

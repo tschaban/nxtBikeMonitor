@@ -42,6 +42,8 @@ private:
   boolean eventConnectionEstablished = false;
   boolean disconnected = false;
 
+  uint8_t WiFiMode;
+
 public:
   /* Constructor: no actions */
   AFEWiFi();

@@ -7,8 +7,9 @@
 AFELED::AFELED() {}
 
 void AFELED::begin(uint8_t id) {
-  AFEDevice Device;
-  if (Device.configuration.isLED[id]) {
+  AFEDataAccess Data;
+  DEVICE Device = Data.getDeviceConfiguration();
+  if (Device.isLED[id]) {
     AFEDataAccess Data;
     LEDConfiguration = Data.getLEDConfiguration(id);
     Data = {};

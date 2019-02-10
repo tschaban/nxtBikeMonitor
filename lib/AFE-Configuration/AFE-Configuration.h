@@ -17,7 +17,7 @@
 #define SERVER_CMD_NONE 0
 
 #ifdef DEBUG
-#define DEBUG_INTERVAL 10
+#define DEBUG_INTERVAL 60
 #endif
 
 #endif

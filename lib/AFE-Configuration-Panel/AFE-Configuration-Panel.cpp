@@ -34,7 +34,6 @@ String AFEConfigurationPanel::getDeviceConfigurationSite(uint8_t command,
 
   if (command == SERVER_CMD_SAVE) {
     Data.saveConfiguration(data);
-    Device.begin();
   }
   String page;
   page.reserve(siteBufferSize);
@@ -66,34 +65,20 @@ String AFEConfigurationPanel::getNetworkConfigurationSite(uint8_t command,
   return page;
 }
 
-String AFEConfigurationPanel::getLEDConfigurationSite(
-    uint8_t command, LED data[sizeof(Device.configuration.isLED)],
-    uint8_t dataLedID) {
+String AFEConfigurationPanel::getLEDConfigurationSite(uint8_t command, LED data,
+                                                      uint8_t ledIndex) {
 
   if (command == SERVER_CMD_SAVE) {
-    for (uint8_t i = 0; i < sizeof(Device.configuration.isLED); i++) {
-      if (Device.configuration.isLED[i]) {
-        Data.saveConfiguration(i, data[i]);
-      } else {
-        break;
-      }
-    }
-    Data.saveSystemLedID(dataLedID);
+    Data.saveConfiguration(ledIndex, data);
   }
 
   String page;
   page.reserve(siteBufferSize);
   page = Site.generateHeader();
-  page += "<form action=\"/?option=led&cmd=1\"  method=\"post\">";
-  for (uint8_t i = 0; i < sizeof(Device.configuration.isLED); i++) {
-    if (Device.configuration.isLED[i]) {
-      page += Site.addLEDConfiguration(i);
-    } else {
-      break;
-    }
-  }
-  page += Site.addSystemLEDConfiguration();
-
+  page += "<form action=\"/?option=led";
+  page += ledIndex;
+  page += "&cmd=1\"  method=\"post\">";
+  page += Site.addLEDConfiguration(ledIndex);
   page += "<input type=\"submit\" class=\"b bs\" value=\"";
   page += "Zapisz";
   page += "\"></form>";

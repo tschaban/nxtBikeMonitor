@@ -15,6 +15,12 @@
 void handleFavicon() {}
 
 /* Method handles all HTTP request */
-void handleHTTPRequests() { WebServer.generate(); }
+void handleHTTPRequests() {
+#ifdef DEBUG
+  Serial << endl << "WebServer callback triggered";
+#endif
+
+  WebServer.generate();
+}
 
 #endif

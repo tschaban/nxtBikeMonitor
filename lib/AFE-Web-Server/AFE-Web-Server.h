@@ -13,7 +13,7 @@
 
 #include <AFE-Configuration-Panel.h>
 #include <AFE-Data-Access.h>
-#include <AFE-Device.h>
+#include <AFE-Defaults.h>
 #include <AFE-OTA.h>
 #include <ESP8266WebServer.h>
 
@@ -24,6 +24,7 @@
 class AFEWebServer {
 
 private:
+  AFEDataAccess Data;
   ESP8266WebServer server;
   AFEConfigurationPanel ConfigurationPanel;
   ESP8266HTTPUpdateServer httpUpdater; // Class used for firmware upgrade
@@ -55,6 +56,8 @@ private:
 
   uint8_t getSystemLEDData();
   DS18B20 getDS18B20Data();
+
+  NTC10K getNTC10KData();
 
 public:
   AFEWebServer();

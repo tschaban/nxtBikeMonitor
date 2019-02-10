@@ -12,7 +12,6 @@
 #endif
 
 #include <AFE-Data-Access.h>
-#include <AFE-Device.h>
 #include <ESP8266WiFi.h>
 
 #include <AFE-I2C-Scanner.h>
@@ -25,7 +24,6 @@ class AFESitesGenerator {
 
 private:
   AFEDataAccess Data;
-  AFEDevice Device;
   uint8_t language;
 
   /* Method generates GPIO selecton list */

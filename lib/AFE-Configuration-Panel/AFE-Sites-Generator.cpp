@@ -59,8 +59,13 @@ const String AFESitesGenerator::generateHeader(uint8_t redirect) {
 
   page += "</h4><h4>MENU</h4>"
           "<ul class=\"lst\">";
-  if (Device.getMode() != MODE_NORMAL) {
-    Device.begin(); // Reading configuration data
+
+  uint8_t deviceMode = Data.getDeviceMode();
+
+  if (deviceMode != MODE_NORMAL) {
+
+    DEVICE Device = Data.getDeviceConfiguration();
+
     page += "<li class=\"itm\"><a href=\"\\?option=device\">";
     page += "Urządzenie";
     page += "</a></li> "
@@ -70,8 +75,8 @@ const String AFESitesGenerator::generateHeader(uint8_t redirect) {
 
     uint8_t itemPresent = 0;
 
-    for (uint8_t i = 0; i < sizeof(Device.configuration.isLED); i++) {
-      if (Device.configuration.isLED[i]) {
+    for (uint8_t i = 0; i < sizeof(Device.isLED); i++) {
+      if (Device.isLED[i]) {
         itemPresent++;
       } else {
         break;
@@ -85,8 +90,8 @@ const String AFESitesGenerator::generateHeader(uint8_t redirect) {
 
     /* Relay */
     itemPresent = 0;
-    for (uint8_t i = 0; i < sizeof(Device.configuration.isRelay); i++) {
-      if (Device.configuration.isRelay[i]) {
+    for (uint8_t i = 0; i < sizeof(Device.isRelay); i++) {
+      if (Device.isRelay[i]) {
         itemPresent++;
       } else {
         break;
@@ -111,8 +116,8 @@ const String AFESitesGenerator::generateHeader(uint8_t redirect) {
 
     /* Switch */
     itemPresent = 0;
-    for (uint8_t i = 0; i < sizeof(Device.configuration.isSwitch); i++) {
-      if (Device.configuration.isSwitch[i]) {
+    for (uint8_t i = 0; i < sizeof(Device.isSwitch); i++) {
+      if (Device.isSwitch[i]) {
         itemPresent++;
       } else {
         break;
@@ -136,7 +141,7 @@ const String AFESitesGenerator::generateHeader(uint8_t redirect) {
 
     /* Sensor DS18B20 */
 
-    if (Device.configuration.isDS18B20) {
+    if (Device.isDS18B20) {
       page += "<li class=\"itm\"><a href=\"\\?option=ds18b20\">";
       page += "Czujnik temperatury";
       page += "</a></li>";
@@ -177,20 +182,20 @@ String AFESitesGenerator::addDeviceConfiguration() {
   String body = "<fieldset>";
 
   /* LED */
-  for (uint8_t i = 0; i < sizeof(Device.configuration.isLED); i++) {
-    if (Device.configuration.isLED[i]) {
+  for (uint8_t i = 0; i < sizeof(configuration.isLED); i++) {
+    if (configuration.isLED[i]) {
       itemsNumber++;
     } else {
       break;
     }
   }
 
-  body += generateHardwareItemsList(sizeof(Device.configuration.isLED),
-                                    itemsNumber, "hl", "Ilość Led'ów");
+  body += generateHardwareItemsList(sizeof(configuration.isLED), itemsNumber,
+                                    "hl", "Ilość Led'ów");
 
   itemsNumber = 0;
-  for (uint8_t i = 0; i < sizeof(Device.configuration.isSwitch); i++) {
-    if (Device.configuration.isSwitch[i]) {
+  for (uint8_t i = 0; i < sizeof(configuration.isSwitch); i++) {
+    if (configuration.isSwitch[i]) {
       itemsNumber++;
     } else {
       break;
@@ -199,29 +204,29 @@ String AFESitesGenerator::addDeviceConfiguration() {
 
   /* Relay */
   itemsNumber = 0;
-  for (uint8_t i = 0; i < sizeof(Device.configuration.isRelay); i++) {
-    if (Device.configuration.isRelay[i]) {
+  for (uint8_t i = 0; i < sizeof(configuration.isRelay); i++) {
+    if (configuration.isRelay[i]) {
       itemsNumber++;
     } else {
       break;
     }
   }
 
-  body += generateHardwareItemsList(sizeof(Device.configuration.isRelay),
-                                    itemsNumber, "hr", "Ilość przekaźników");
+  body += generateHardwareItemsList(sizeof(configuration.isRelay), itemsNumber,
+                                    "hr", "Ilość przekaźników");
 
   /* Switch */
   itemsNumber = 0;
-  for (uint8_t i = 0; i < sizeof(Device.configuration.isSwitch); i++) {
-    if (Device.configuration.isSwitch[i]) {
+  for (uint8_t i = 0; i < sizeof(configuration.isSwitch); i++) {
+    if (configuration.isSwitch[i]) {
       itemsNumber++;
     } else {
       break;
     }
   }
 
-  body += generateHardwareItemsList(sizeof(Device.configuration.isSwitch),
-                                    itemsNumber, "hs", "Ilość przycisków");
+  body += generateHardwareItemsList(sizeof(configuration.isSwitch), itemsNumber,
+                                    "hs", "Ilość przycisków");
 
   body += "<div class=\"cc\"><label><input name =\"ds\" type=\"checkbox\" "
           "value=\"1\"";
@@ -316,7 +321,7 @@ String AFESitesGenerator::addLEDConfiguration(uint8_t id) {
 
 String AFESitesGenerator::addSystemLEDConfiguration() {
   uint8_t configuration = Data.getSystemLedID();
-  AFEDevice Device;
+  DEVICE Device = Data.getDeviceConfiguration();
 
   String body =
       "<fieldset><div class=\"cf\"><label>LED</label><select name=\"i\">";
@@ -326,8 +331,8 @@ String AFESitesGenerator::addSystemLEDConfiguration() {
   body += ">Brak";
   body += "</option>";
 
-  for (uint8_t i = 1; i <= sizeof(Device.configuration.isLED); i++) {
-    if (Device.configuration.isLED[i - 1]) {
+  for (uint8_t i = 1; i <= sizeof(Device.isLED); i++) {
+    if (Device.isLED[i - 1]) {
       body += "<option value=\"";
       body += i;
       body += "\"";
@@ -351,6 +356,7 @@ String AFESitesGenerator::addSystemLEDConfiguration() {
 
 String AFESitesGenerator::addRelayConfiguration(uint8_t id) {
   RELAY configuration = Data.getRelayConfiguration(id);
+  DEVICE Device = Data.getDeviceConfiguration();
   String body = "<fieldset>";
   char filed[13];
   sprintf(filed, "g%d", id);
@@ -369,8 +375,8 @@ String AFESitesGenerator::addRelayConfiguration(uint8_t id) {
   body += ">Brak";
   body += "</option>";
 
-  for (uint8_t i = 1; i <= sizeof(Device.configuration.isLED); i++) {
-    if (Device.configuration.isLED[i - 1]) {
+  for (uint8_t i = 1; i <= sizeof(Device.isLED); i++) {
+    if (Device.isLED[i - 1]) {
       body += "<option value=\"";
       body += i;
       body += "\"";
@@ -586,11 +592,13 @@ String AFESitesGenerator::addHelpSection() {
   DEVICE configuration;
   configuration = Data.getDeviceConfiguration();
 
+  uint8_t deviceMode = Data.getDeviceMode();
+
   String page = "<fieldset><div class=\"cf\"><label>";
   page += "Stan: uruchomione ";
   page += "</label><span></div></fieldset>";
 
-  if (Device.getMode() != MODE_ACCESS_POINT) {
+  if (deviceMode != MODE_ACCESS_POINT) {
 
     String body = "<a "
                   "href=\"https://www.smartnydom.pl/afe-firmware-";

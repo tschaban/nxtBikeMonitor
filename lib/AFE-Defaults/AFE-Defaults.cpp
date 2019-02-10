@@ -8,6 +8,8 @@ AFEDefaults::AFEDefaults() {}
 
 void AFEDefaults::set() {
 
+  Serial << endl << endl << "------------- Setting the device --------------";
+
 #ifdef DEBUG
   Serial << endl << "Saving default configuration" << endl << " - device: ";
 #endif
@@ -29,14 +31,14 @@ void AFEDefaults::set() {
   Data->saveConfiguration(networkConfiguration);
 
 #ifdef DEBUG
-  Serial << "completed" << endl << " - relay: ";
+  Serial << endl << " - relay: ";
 #endif
 
   deviceConfiguration;
   Data->saveConfiguration(deviceConfiguration);
 
 #ifdef DEBUG
-  Serial << "completed" << endl << " - LED: ";
+  Serial << endl << " - LED: ";
 #endif
 
 #ifdef DEBUG
@@ -46,16 +48,7 @@ void AFEDefaults::set() {
 #ifdef DEBUG
   Serial << "completed" << endl << " - sensor DS18B20: ";
 #endif
-}
 
-void AFEDefaults::eraseConfiguration() {
-#ifdef DEBUG
-  Serial << endl << endl << "------------- Setting the device --------------";
-#endif
-  AFEEEPROM Eeprom;
-  Eeprom.erase();
-  set();
-  Data->deviceConfigured();
 #ifdef DEBUG
   Serial << endl << "-----------------------------------------------";
 #endif

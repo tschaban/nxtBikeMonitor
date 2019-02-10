@@ -3,9 +3,13 @@
 */
 
 /* Includes libraries for debugging in development compilation only */
+
+#ifdef DEBUG
+#include <Streaming.h>
+#endif
+
 #include <AFE-Data-Access.h>
-#include <AFE-Device.h>
-#include <AFE-I2C-Scanner.h>
+//#include <AFE-I2C-Scanner.h>
 #include <AFE-LED.h>
 #include <AFE-Relay.h>
 #include <AFE-Sensor-DS18B20.h>
@@ -15,22 +19,20 @@
 #include <AFE-WiFi.h>
 #include <FS.h>
 
-#ifdef DEBUG
-#include <Streaming.h>
-#endif
-
 AFEDataAccess Data;
-AFEDevice Device;
 AFEWiFi Network;
 AFEWebServer WebServer;
-AFESwitch Switch[sizeof(Device.configuration.isSwitch)];
-AFERelay Relay[sizeof(Device.configuration.isRelay)];
+AFESwitch Switch[DEVICE_NO_OF_SWITCHES];
+AFERelay Relay[DEVICE_NO_OF_RELAYS];
 AFELED Led;
-AFESensorDS18B20 SensorDS18B20;
+AFESensorDS18B20 SensorDS18B20[DEVICE_NO_OF_DS18B20];
 AFESensorNTC10K SensorNTC10K;
-AFEI2CScanner I2CScanner;
+// AFEI2CScanner I2CScanner;
 
 float temperature;
+
+uint8_t DeviceMode;
+DEVICE Device;
 
 void setup() {
 
@@ -57,7 +59,11 @@ void setup() {
 #endif
   }
 
-  Device.begin();
+#ifdef DEBUG
+  Serial << endl << "Initializing device";
+#endif
+
+  DeviceMode = Data.getDeviceMode();
 
 #ifdef DEBUG
   Serial << endl << "All classes and global variables initialized";
@@ -65,21 +71,15 @@ void setup() {
 
   /* Checking if the device is launched for a first time. If so it loades
    * default configuration to EEPROM */
-  if (Device.isFirstTimeLaunch()) {
+  if (Data.isFirstTimeLaunch()) {
 #ifdef DEBUG
     Serial << endl << "First time launch";
 #endif
-    Device.setDevice();
+    AFEDefaults Defaults;
+    Defaults.set();
   }
 
-  /* Checking if WiFi is configured, if not then it runs configuration panel in
-   * access point mode */
-  if (Device.getMode() != MODE_ACCESS_POINT && !Device.isConfigured()) {
-#ifdef DEBUG
-    Serial << endl << "Going to configuration mode (HotSpot)";
-#endif
-    Device.reboot(MODE_ACCESS_POINT);
-  }
+  Device = Data.getDeviceConfiguration();
 
   /* Initializing relay */
   initRelay();
@@ -88,7 +88,7 @@ void setup() {
 #endif
 
   /* Initialzing network */
-  Network.begin(Device.getMode());
+  Network.begin(DeviceMode);
 #ifdef DEBUG
   Serial << endl << "Network initialized";
 #endif
@@ -104,7 +104,7 @@ void setup() {
 #endif
 
   /* If device in configuration mode then it starts LED blinking */
-  if (Device.getMode() == MODE_ACCESS_POINT) {
+  if (DeviceMode == MODE_ACCESS_POINT) {
     Led.blinkingOn(100);
   }
 
@@ -128,7 +128,7 @@ void setup() {
   Serial << endl << "Switch(es) initialized";
 #endif
 
-  if (Device.getMode() == MODE_NORMAL) {
+  if (DeviceMode == MODE_NORMAL) {
     initSensorNTC10K();
 
 #ifdef DEBUG
@@ -136,16 +136,12 @@ void setup() {
 #endif
 
     initSensorDS18B20();
-
-#ifdef DEBUG
-    Serial << endl << "DS18B20 initialized";
-#endif
   }
 
 #if defined(DEBUG)
   /* Scanning I2C for devices */
-  if (Device.getMode() == MODE_NORMAL) {
-    I2CScanner.scanAll();
+  if (DeviceMode == MODE_NORMAL) {
+    // I2CScanner.scanAll();
   }
 
   Serial << endl
@@ -156,10 +152,9 @@ void setup() {
 }
 
 void loop() {
-
-  if (Device.getMode() != MODE_ACCESS_POINT) {
+  if (DeviceMode != MODE_ACCESS_POINT) {
     if (Network.connected()) {
-      if (Device.getMode() == MODE_NORMAL) {
+      if (DeviceMode == MODE_NORMAL) {
 
         /* Triggerd when connectes/reconnects to WiFi */
         eventsListener();
@@ -170,7 +165,7 @@ void loop() {
 
         /* Relay related events */
         mainRelay();
-
+        mainSensorDS18B20();
         mainSensorNTC10K();
 
       } else { /* Device runs in configuration mode over WiFi */
@@ -182,7 +177,7 @@ void loop() {
     }
 
     else {
-      if (Device.getMode() == MODE_CONFIGURATION && Led.isBlinking()) {
+      if (DeviceMode == MODE_CONFIGURATION && Led.isBlinking()) {
         Led.blinkingOff();
       }
     }
@@ -201,7 +196,7 @@ void loop() {
 
 /* Debug information */
 #if defined(DEBUG)
-  if (Device.getMode() == MODE_NORMAL) {
+  if (DeviceMode == MODE_NORMAL) {
     debugListener();
   }
 #endif

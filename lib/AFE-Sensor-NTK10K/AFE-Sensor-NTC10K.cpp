@@ -11,12 +11,11 @@ void AFESensorNTC10K::begin() {
   configuration = Data.getNTC10KSensorConfiguration();
 
   DEVICE device = Data.getDeviceConfiguration();
-  VCC = device.VCC;
 
   _initialized = true;
 }
 
-float AFESensorNTC10K::getTemperature() { return temperature; }
+double AFESensorNTC10K::getTemperature() { return temperature; }
 
 boolean AFESensorNTC10K::isReady() {
   if (ready) {
@@ -37,24 +36,27 @@ void AFESensorNTC10K::listener() {
 
     if (time - startTime >= configuration.interval * 1000) {
 
-      if (counterOfSamplings < configuration.numberOfSampling) {
-        analogData = analogRead(A0);
+      if (counterOfSamplings < configuration.numberOfSamples) {
+        analogData += analogRead(A0);
+        counterOfSamplings++;
       } else {
-#ifdef DEBUG
-        Serial << endl << endl << "-------------- Reading NTC10K -------------";
-#endif
 
 #ifdef DEBUG
         Serial << endl
+               << " - Number of samples: " << counterOfSamplings << endl
                << " - Analog value = "
-               << (uint16_t)analogData / configuration.numberOfSampling;
+               << analogData / configuration.numberOfSamples;
 #endif
 
-        temperature = calculateTemperature((uint16_t)analogData /
-                                           configuration.numberOfSampling);
+        temperature =
+            calculateTemperature(analogData / configuration.numberOfSamples) +
+            configuration.correction;
 
 #ifdef DEBUG
-        Serial << endl << " - Temperature = " << temperature << " C";
+        Serial << endl
+               << " - Temperature correction: " << configuration.correction
+               << endl
+               << " - Temperature = " << temperature << " C";
         Serial << endl
                << " - Sampling time = "
                << millis() - startTime - configuration.interval * 1000
@@ -62,6 +64,7 @@ void AFESensorNTC10K::listener() {
 #endif
 
         counterOfSamplings = 0;
+        analogData = 0;
         ready = true;
         startTime = 0;
 
@@ -73,21 +76,27 @@ void AFESensorNTC10K::listener() {
   }
 }
 
-float AFESensorNTC10K::calculateTemperature(uint16_t analogData) {
-  double V_NTC = (double)analogData / 1024;
-  double R_NTC = (configuration.balancingResistor * V_NTC) / (VCC - V_NTC);
+double AFESensorNTC10K::calculateTemperature(uint16_t analogData) {
+
+  const double A = 0.001129148;
+  const double B = 0.000234125;
+  const double C = 0.0000000876741;
+
+  double V_NTC = (analogData * configuration.hardware.VCC) /
+                 configuration.hardware.ADCResolution;
+  double R_NTC = (configuration.hardware.VCC *
+                  configuration.hardware.balancingResistor / V_NTC) -
+                 configuration.hardware.balancingResistor;
 
 #ifdef DEBUG
-  Serial << endl << "V[NTC]=" << V_NTC << ", R[NTC]=" << R_NTC << ", ";
+  Serial << endl
+         << " - VCC=" << configuration.hardware.VCC << endl
+         << " - ADC Resolution=" << configuration.hardware.ADCResolution << endl
+         << " - Balancing Resistor=" << configuration.hardware.balancingResistor
+         << endl
+         << " - V[NTC]=" << V_NTC << endl
+         << " - R[NTC]=" << R_NTC;
 #endif
 
-  R_NTC = log(R_NTC);
-
-#ifdef DEBUG
-  Serial << "R[NTC-ln]=" << R_NTC;
-#endif
-
-  return (1 / (0.001129148 +
-               (0.000234125 + (0.0000000876741 * R_NTC * R_NTC)) * R_NTC)) -
-         273.15;
+  return (1 / (A + (B * log(R_NTC)) + (C * pow((log(R_NTC)), 3)))) - 273.15;
 }

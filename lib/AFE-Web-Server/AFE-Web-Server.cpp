@@ -48,15 +48,13 @@ HTTPCOMMAND AFEWebServer::getHTTPCommand() {
 }
 
 void AFEWebServer::generate() {
-  /* @TODO this method is not writen well */
-
-  if (_refreshConfiguration) {
-    _refreshConfiguration = false;
-    Device.begin();
-  }
-
   const String optionName = getOptionName();
   uint8_t command = getCommand();
+  DEVICE Device = Data.getDeviceConfiguration();
+
+#ifdef DEBUG
+  Serial << endl << "Got HTTP Request: " << optionName << " : " << command;
+#endif
 
   if (optionName == "device") {
     DEVICE data;
@@ -70,36 +68,30 @@ void AFEWebServer::generate() {
       data = getNetworkData();
     }
     publishHTML(ConfigurationPanel.getNetworkConfigurationSite(command, data));
-  } else if (optionName == "led") {
-    LED data[sizeof(Device.configuration.isLED)] = {};
-    uint8_t dataLedID;
-    if (command == SERVER_CMD_SAVE) {
-      for (uint8_t i = 0; i < sizeof(Device.configuration.isLED); i++) {
-        data[i] = getLEDData(i);
-      }
-      dataLedID = getSystemLEDData();
-    }
-    publishHTML(
-        ConfigurationPanel.getLEDConfigurationSite(command, data, dataLedID));
   } else if (optionName == "exit") {
     publishHTML(ConfigurationPanel.getSite(optionName, command, true));
-    Device.reboot(MODE_NORMAL);
+    AFEDevice deviceControl;
+    deviceControl.reboot(MODE_NORMAL);
   } else if (optionName == "reset") {
     publishHTML(ConfigurationPanel.getSite(optionName, command, false));
     if (command == 1) {
-      Device.setDevice();
+      AFEDefaults Defaults;
+      AFEDevice deviceControl;
+      Defaults.set();
       server.client().stop();
-      Device.reboot(MODE_ACCESS_POINT);
+      deviceControl.reboot(MODE_ACCESS_POINT);
     }
   } else if (optionName == "help") {
     publishHTML(ConfigurationPanel.getSite(
         optionName, command, command == SERVER_CMD_NONE ? false : true));
     if (command == 1) {
       server.client().stop();
-      Device.reboot(MODE_CONFIGURATION);
+      AFEDevice deviceControl;
+      deviceControl.reboot(MODE_CONFIGURATION);
     } else if (command == 2) {
       server.client().stop();
-      Device.reboot(MODE_ACCESS_POINT);
+      AFEDevice deviceControl;
+      deviceControl.reboot(MODE_ACCESS_POINT);
     }
   } else if (optionName == "ds18b20") {
     DS18B20 data = {};
@@ -107,9 +99,9 @@ void AFEWebServer::generate() {
       data = getDS18B20Data();
     }
     publishHTML(ConfigurationPanel.getDS18B20ConfigurationSite(command, data));
-  } else {
-    for (uint8_t i = 0; i < sizeof(Device.configuration.isRelay); i++) {
-      if (Device.configuration.isRelay[i]) {
+  } else { /* Relays and Switches */
+    for (uint8_t i = 0; i < sizeof(Device.isRelay); i++) {
+      if (Device.isRelay[i]) {
         if (optionName == "relay" + String(i)) {
           RELAY data = {};
           if (command == SERVER_CMD_SAVE) {
@@ -123,8 +115,8 @@ void AFEWebServer::generate() {
       }
     }
 
-    for (uint8_t i = 0; i < sizeof(Device.configuration.isSwitch); i++) {
-      if (Device.configuration.isSwitch[i]) {
+    for (uint8_t i = 0; i < sizeof(Device.isSwitch); i++) {
+      if (Device.isSwitch[i]) {
         if (optionName == "switch" + String(i)) {
           SWITCH data = {};
           if (command == SERVER_CMD_SAVE) {
@@ -137,12 +129,27 @@ void AFEWebServer::generate() {
         break;
       }
     }
+
+    for (uint8_t i = 0; i < sizeof(Device.isLED); i++) {
+      if (Device.isLED[i]) {
+        if (optionName == "LED" + String(i)) {
+          LED data = {};
+          if (command == SERVER_CMD_SAVE) {
+            data = getLEDData(i);
+          }
+          publishHTML(
+              ConfigurationPanel.getLEDConfigurationSite(command, data, i));
+        }
+      } else {
+        break;
+      }
+    }
   }
 }
 
 String AFEWebServer::getOptionName() {
 
-  if (Device.getMode() == MODE_NORMAL) {
+  if (Data.getDeviceMode() == MODE_NORMAL) {
     /* Recived HTTP API Command */
     if (server.hasArg("command")) {
       /* Constructing command */
@@ -195,17 +202,18 @@ DEVICE AFEWebServer::getDeviceData() {
   _refreshConfiguration =
       true; // it will cause that device configuration will be refeshed
 
-  for (uint8_t i = 0; i < sizeof(Device.configuration.isLED); i++) {
+  for (uint8_t i = 0; i < DEVICE_NO_OF_LEDS; i++) {
     server.arg("hl").toInt() > i ? data.isLED[i] = true : data.isLED[i] = false;
   }
 
-  for (uint8_t i = 0; i < sizeof(Device.configuration.isSwitch); i++) {
+  for (uint8_t i = 0; i < DEVICE_NO_OF_SWITCHES; i++) {
     server.arg("hs").toInt() > i ? data.isSwitch[i] = true
                                  : data.isSwitch[i] = false;
   }
-  server.arg("ds").length() > 0 ? data.isDS18B20 = true
-                                : data.isDS18B20 = false;
-
+  for (uint8_t i = 0; i < DEVICE_NO_OF_DS18B20; i++) {
+    server.arg("ds").length() > 0 ? data.isDS18B20[i] = true
+                                  : data.isDS18B20[i] = false;
+  }
   return data;
 }
 
@@ -300,6 +308,21 @@ DS18B20 AFEWebServer::getDS18B20Data() {
 
   if (server.arg("i").length() > 0) {
     data.interval = server.arg("i").toInt();
+  }
+
+  return data;
+}
+
+NTC10K AFEWebServer::getNTC10KData() {
+  NTC10K data;
+  if (server.arg("i").length() > 0) {
+    data.interval = server.arg("i").toInt();
+  }
+  if (server.arg("s").length() > 0) {
+    data.numberOfSamples = server.arg("s").toInt();
+  }
+  if (server.arg("c").length() > 0) {
+    data.correction = server.arg("c").toFloat();
   }
 
   return data;

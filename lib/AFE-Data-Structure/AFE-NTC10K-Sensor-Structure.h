@@ -11,10 +11,19 @@
 #include "WProgram.h"
 #endif
 
+/* https://www.ametherm.com/thermistor/ntc-thermistors-steinhart-and-hart-equation
+ */
+struct NTC10K_HARDWARE_PARAMETERS {
+  double balancingResistor;
+  double ADCResolution;
+  double VCC;
+};
+
 struct NTC10K {
   uint8_t interval;
-  uint8_t numberOfSampling;
-  uint16_t balancingResistor;
+  uint8_t numberOfSamples;
+  float correction;
+  NTC10K_HARDWARE_PARAMETERS hardware;
 };
 
 #endif

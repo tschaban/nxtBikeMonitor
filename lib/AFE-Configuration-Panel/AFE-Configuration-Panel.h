@@ -11,6 +11,7 @@
 #include "WProgram.h"
 #endif
 
+#include <AFE-Data-Access.h>
 #include <AFE-Device.h>
 #include <AFE-Sites-Generator.h>
 
@@ -36,9 +37,7 @@ public:
   String getDeviceConfigurationSite(uint8_t command, DEVICE data);
   String getNetworkConfigurationSite(uint8_t command, NETWORK data);
 
-  String getLEDConfigurationSite(uint8_t command,
-                                 LED data[sizeof(Device.configuration.isLED)],
-                                 uint8_t dataLedID);
+  String getLEDConfigurationSite(uint8_t command, LED data, uint8_t ledIndex);
 
   String getRelayConfigurationSite(uint8_t command, RELAY data,
                                    uint8_t relayIndex);
